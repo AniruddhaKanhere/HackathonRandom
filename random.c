@@ -16,8 +16,6 @@ typedef struct xOWFRet
 /* Define the FreeRTOS entropy pool to be used. */
 static uint64_t FreeRTOSEntropyPool;
 
-mbedtls_sha256_context ctx;
-
 /* Initialise the RNG.
  * It can be seeded if required using value in xSeed and
  * by setting the xIsSeeded parameter to pdTRUE, else it will
@@ -32,10 +30,8 @@ void vRNGInit( BaseType_t xIsSeeded,
     else
     {
         TickType_t xTicks = xTaskGetTickCount();
-        FreeRTOSEntropyPool = ( uint64_t ) xSeed;
+        FreeRTOSEntropyPool = ( uint64_t ) xTicks;
     }
-
-    mbedtls_sha256_init( &ctx );
 }
 
 /* Function to add entropy from an ISR. */
