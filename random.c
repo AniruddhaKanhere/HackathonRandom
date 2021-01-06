@@ -71,7 +71,7 @@ static xOWFRet_t xOWF( uint64_t input )
     }
     output;
 
-    mbedtls_sha256( ( *unsigned char )&input, 8, output.chars, 0 );
+    mbedtls_sha256_ret( ( const unsigned char * ) &input, sizeof( input ), output.chars, 0 );
 
     xReturn.l = output.int64[ 0 ];
     xReturn.r = output.int64[ 1 ];
