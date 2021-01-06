@@ -52,13 +52,13 @@ void vAddBytesToPool( uint64_t ulEntropy )
 
 
 /* Function to get a random number using the pool. */
-uint64_t ulGetRandomNumber( void )
+uint32_t ulGetRandomNumber( void )
 {
     xOWFRet_t xOWFOutput;
 
     xOWFOutput = xOWF( FreeRTOSEntropyPool );
     FreeRTOSEntropyPool ^= xOWFOutput.l;
-    return xOWFOutput.r;
+    return (int32_t) (xOWFOutput.r & 0xFFFF);
 }
 
 static xOWFRet xOWF( uint64_t input )

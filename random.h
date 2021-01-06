@@ -1,5 +1,5 @@
 void vRNGInit( BaseType_t xIsSeeded,
-               EntropyType_t xSeed );
+               uint64_t xSeed );
 void vAddBytesToPoolFromISR( BaseType_t xISRNumber );
-void vAddBytesToPool( uint32_t ulEntropy );
+void vAddBytesToPool( uint64_t ulEntropy );
 uint32_t ulGetRandomNumber( void );
