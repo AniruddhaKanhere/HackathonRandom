@@ -67,6 +67,7 @@ uint32_t ulGetRandomNumber( void )
 
 static xOWFRet_t xOWF( uint64_t input )
 {
+    xOWFRet_t xReturn;
     union pcSHAOutput
     {
         unsigned char chars[ 32 ];
@@ -76,7 +77,8 @@ static xOWFRet_t xOWF( uint64_t input )
 
     mbedtls_sha256( ( *unsigned char )&input, 8, output.chars, 0 );
 
-    return {
-               output.int64[ 0 ], output.int64[ 1 ]
-    };
+    xReturn.l = output.int64[ 0 ];
+    xReturn.r = output.int64[ 1 ];
+
+    return xReturn;
 }
