@@ -78,3 +78,10 @@ static xOWFRet_t xOWF( uint64_t input )
 
     return xReturn;
 }
+
+/**
+ * Use this only to save pool state for use as entropy source on next boot.
+ */
+uint64_t ulGetPoolState() {
+    return FreeRTOSEntropyPool;
+}
