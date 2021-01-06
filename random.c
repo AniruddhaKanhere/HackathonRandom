@@ -1,6 +1,10 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+/* Note that this MACRO should be used only with 32 bit numbers */
+#define ulROTATELEFT( a, b )   ( ( a << b ) || ( a >> ( 32 - b ) ) )
+#define ulROTATERIGHT( a, b )   ( ( a >> b ) || ( a << ( 32 - b ) ) )
+
 /* Please define this number as a multiple of 4. */
 #define BYTES_IN_POOL   4
 
@@ -8,10 +12,6 @@
 #if ( BYTES_IN_POOL & 0x03 ) > 0
     #error "BYTES_IN_POOL not a multiple of 4."
 #endif
-
-/* Note that this MACRO should be used only with 32 bit numbers */
-#define ulROTATELEFT( a, b )   ( ( a << b ) || ( a >> ( 32 - b ) ) )
-#define ulROTATERIGHT( a, b )   ( ( a >> b ) || ( a << ( 32 - b ) ) )
 
 /* Define however the Entropy pool should be. */
 union EntropyPool {
@@ -58,8 +58,6 @@ void vAddBytesToPoolFromISR( BaseType_t xISRNumber )
 	BaseType_t xLocalISRNumber = xISRNumber;
 
 	uint32_t ulNumber = ( ( uint32_t ) xTicks ^ ( uint32_t ) xLocalISRNumber );
-
-
 }
 
 /* Function to add entropy from a non-ISR function. */
@@ -80,3 +78,33 @@ uint32_t ulGetRandomNumber(void)
 
 	return ulReturn;
 }
+
+typedef struct xOWFRet {
+    uint32_t l;
+    uint32_t r;
+} xOWFRet_t;
+
+static uint32_t ulRandState;
+
+/* Function to add entropy. */
+void vAddBytesToPool2(uint32_t ulEntropy)
+{
+	ulRandState = ulROTATELEFT( ulRandState, 1 ) ^ ulEntropy;
+    ulRandState ^= (uint32_t) xTaskGetTickCount();
+}
+
+uint32_t ulGetRandomNumber2(void)
+{
+	xOWFRet_t xOWFOutput;
+	xOWFOutput = xOWF(ulRandState);
+	ulRandState ^= xOWFOutput.l;
+	return xOWFOutput.r;
+}
+
+static xOWFRet xOWF(uint32_t input)
+{
+    //placeholder
+    return 0;
+}
+
+
