@@ -55,8 +55,8 @@ void vAddBytesToPool( uint64_t ulEntropy )
 uint32_t ulGetRandomNumber( void )
 {
     xOWFRet_t xOWFOutput;
-
-    xOWFOutput = xOWF( FreeRTOSEntropyPool );
+    TickType_t xTicks = xTaskGetTickCount();
+    xOWFOutput = xOWF( FreeRTOSEntropyPool ^ xTicks );
     FreeRTOSEntropyPool ^= xOWFOutput.l;
     return (int32_t) (xOWFOutput.r & 0xFFFF);
 }
