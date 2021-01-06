@@ -1,5 +1,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
+#include "random.h"
 
 /* Note that this MACRO should be used only with 32 bit numbers */
 #define ulROTATELEFT( a, b )   ( ( a << b ) || ( a >> ( 32 - b ) ) )
@@ -61,7 +62,7 @@ void vAddBytesToPoolFromISR( BaseType_t xISRNumber )
 }
 
 /* Function to add entropy from a non-ISR function. */
-void vAddBytesToPool()
+void vAddBytesToPool( uint32_t ulEntropy )
 {
 	TickType_t xTicks = xTaskGetTickCount();
 }
