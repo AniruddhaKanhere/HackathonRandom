@@ -15,16 +15,14 @@
     #error "BYTES_IN_POOL not a multiple of 4."
 #endif
 
-/* Define however the Entropy pool should be. */
-union EntropyPool
+typedef struct xOWFRet
 {
-    uint8_t ucBytes[ BYTES_IN_POOL ];
-    uint32_t ulWord[ BYTES_IN_POOL / 4 ];
-};
-typedef union EntropyPool EntropyType_t;
+    uint32_t l;
+    uint32_t r;
+} xOWFRet_t;
 
 /* Define the FreeRTOS entropy pool to be used. */
-EntropyType_t FreeRTOSEntropyPool;
+static uint32_t FreeRTOSEntropyPool;
 
 /* Initialise the RNG.
  * It can be seeded if required using value in xSeed and
@@ -35,16 +33,12 @@ void vRNGInit( BaseType_t xIsSeeded,
 {
     if( xIsSeeded == pdTRUE )
     {
-        memcpy( &FreeRTOSEntropyPool, &xSeed, sizeof( xSeed ) );
+        FreeRTOSEntropyPool = xSeed;
     }
     else
     {
         TickType_t xTicks = xTaskGetTickCount();
-        EntropyType_t xLocalSeed;
-
-        xLocalSeed.ulWord[ 0 ] = ( uint32_t ) xTicks;
-
-        memcpy( &FreeRTOSEntropyPool, &xLocalSeed, sizeof( xSeed ) );
+        FreeRTOSEntropyPool = ( uint32_t ) xSeed;
     }
 }
 
@@ -53,47 +47,25 @@ void vAddBytesToPoolFromISR( BaseType_t xISRNumber )
 {
     BaseType_t xLocalISRNumber = xISRNumber;
 
-    ulRandState = ulROTATELEFT( ulRandState, 1 ) ^ xLocalISRNumber;
-    ulRandState ^= ( uint32_t ) xTaskGetTickCountFromISR();
+    FreeRTOSEntropyPool = ulROTATELEFT( FreeRTOSEntropyPool , 1 ) ^ xLocalISRNumber;
+    FreeRTOSEntropyPool ^= ( uint32_t ) xTaskGetTickCountFromISR();
 }
 
 /* Function to add entropy from a non-ISR function. */
 void vAddBytesToPool( uint32_t ulEntropy )
 {
-    ulRandState = ulROTATELEFT( ulRandState, 1 ) ^ ulEntropy;
-    ulRandState ^= ( uint32_t ) xTaskGetTickCount();
+    FreeRTOSEntropyPool = ulROTATELEFT( FreeRTOSEntropyPool , 1 ) ^ ulEntropy;
+    FreeRTOSEntropyPool ^= ( uint32_t ) xTaskGetTickCount();
 }
 
 
-/* Function to get a random number from the SHA1 of the pool. */
+/* Function to get a random number using the pool. */
 uint32_t ulGetRandomNumber( void )
-{
-    uint32_t ulReturn = 0;
-
-    for( int i = 0; i < ( sizeof( EntropyType_t ) / 4 ); i++ )
-    {
-        ulReturn ^= FreeRTOSEntropyPool.ulWord[ i ];
-    }
-
-    ulReturn = xOWF( ulReturn ).l;
-
-    return ulReturn;
-}
-
-typedef struct xOWFRet
-{
-    uint32_t l;
-    uint32_t r;
-} xOWFRet_t;
-
-static uint32_t ulRandState;
-
-uint32_t ulGetRandomNumber2( void )
 {
     xOWFRet_t xOWFOutput;
 
-    xOWFOutput = xOWF( ulRandState );
-    ulRandState ^= xOWFOutput.l;
+    xOWFOutput = xOWF( FreeRTOSEntropyPool );
+    FreeRTOSEntropyPool ^= xOWFOutput.l;
     return xOWFOutput.r;
 }
 
