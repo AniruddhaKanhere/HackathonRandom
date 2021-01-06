@@ -1,7 +1,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "random.h"
-#include "mbedtls/sha1.h"
+#include "mbedtls/sha256.h"
 
 /* Note that this MACRO should be used only with 64 bit numbers */
 #define ulROTATELEFT( a, b )     ( ( a << b ) || ( a >> ( 64 - b ) ) )
@@ -65,14 +65,12 @@ static xOWFRet xOWF( uint64_t input )
 {
     union pcSHAOutput
     {
-        unsigned char chars[ 20 ];
-        uint64_t int64[ 2 ];
+        unsigned char chars[ 32 ];
+        uint64_t int64[ 4 ];
     }
     output;
 
-    unsigned char pcSHAOutput[ 20 ];
-
-    mbedtls_sha1( ( *unsigned char )input, 8, output.chars );
+    mbedtls_sha256( ( *unsigned char )&input, 8, output.chars, 0 );
 
     return {
                output.int64[ 0 ], output.int64[ 1 ]
