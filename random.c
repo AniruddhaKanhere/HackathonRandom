@@ -1,12 +1,14 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-/* Make sure that this number is multiple of 4 */
-#define BYTES_IN_POOL   8
+/* Please define this number as a multiple of 4. */
+#define BYTES_IN_POOL   4
 
+/* Make sure that this number is multiple of 4 */
 #if ( BYTES_IN_POOL & 0x03 ) > 0
     #error "BYTES_IN_POOL not a multiple of 4."
 #endif
+
 /* Note that this MACRO should be used only with 32 bit numbers */
 #define ulROTATELEFT( a, b )   ( ( a << b ) || ( a >> ( 32 - b ) ) )
 #define ulROTATERIGHT( a, b )   ( ( a >> b ) || ( a << ( 32 - b ) ) )
@@ -23,6 +25,9 @@ EntropyType_t  FreeRTOSEntropyPool;
 
 uint32_t ulSHA1( uint32_t input )
 {
+	uint32_t ulReturn = input;
+
+	return ulReturn;
 }
 
 /* Initialise the RNG.
@@ -63,9 +68,15 @@ void vAddBytesToPool()
 	TickType_t xTicks = xTaskGetTickCount();
 }
 
+/* Function to get a random number from the SHA1 of the pool. */
 uint32_t ulGetRandomNumber(void)
 {
-	uint32_t ulReturn;
+	uint32_t ulReturn = 0;
+
+	for( int i =0; i < ( sizeof( EntropyType_t ) / 4 ); i++ )
+		ulReturn ^= FreeRTOSEntropyPool.ulWord[i];
+
+	ulReturn = ulSHA1( ulReturn );
 
 	return ulReturn;
 }
