@@ -50,6 +50,23 @@ void vAddBytesToPool( uint64_t ulEntropy )
     FreeRTOSEntropyPool ^= ( uint64_t ) xTaskGetTickCount();
 }
 
+static xOWFRet_t xOWF(uint64_t input)
+{
+    xOWFRet_t xReturn;
+    union pcSHAOutput
+    {
+        unsigned char chars[32];
+        uint64_t int64[4];
+    }
+    output;
+
+    mbedtls_sha256_ret((const unsigned char*)&input, sizeof(input), output.chars, 0);
+
+    xReturn.l = output.int64[0];
+    xReturn.r = output.int64[1];
+
+    return xReturn;
+}
 
 /* Function to get a random number using the pool. */
 uint32_t ulGetRandomNumber( void )
@@ -58,26 +75,9 @@ uint32_t ulGetRandomNumber( void )
     TickType_t xTicks = xTaskGetTickCount();
     xOWFOutput = xOWF( FreeRTOSEntropyPool ^ xTicks );
     FreeRTOSEntropyPool ^= xOWFOutput.l;
-    return (int32_t) (xOWFOutput.r & 0xFFFF);
+    return (uint32_t) (xOWFOutput.r & 0xFFFFFFFF);
 }
 
-static xOWFRet_t xOWF( uint64_t input )
-{
-    xOWFRet_t xReturn;
-    union pcSHAOutput
-    {
-        unsigned char chars[ 32 ];
-        uint64_t int64[ 4 ];
-    }
-    output;
-
-    mbedtls_sha256_ret( ( const unsigned char * ) &input, sizeof( input ), output.chars, 0 );
-
-    xReturn.l = output.int64[ 0 ];
-    xReturn.r = output.int64[ 1 ];
-
-    return xReturn;
-}
 
 /**
  * Use this only to save pool state for use as entropy source on next boot.
