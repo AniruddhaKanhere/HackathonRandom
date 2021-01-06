@@ -4,8 +4,8 @@
 #include "mbedtls/sha256.h"
 
 /* Note that this MACRO should be used only with 64 bit numbers */
-#define ulROTATELEFT( a, b )     ( ( a << b ) || ( a >> ( 64 - b ) ) )
-#define ulROTATERIGHT( a, b )    ( ( a >> b ) || ( a << ( 64 - b ) ) )
+#define ulROTATELEFT( a, b )     ( ( ( a ) << ( b ) ) || ( ( a ) >> ( 64 - ( b ) ) ) )
+#define ulROTATERIGHT( a, b )    ( ( ( a ) >> ( b ) ) || ( ( a ) << ( 64 - ( b ) ) ) )
 
 typedef struct xOWFRet
 {
