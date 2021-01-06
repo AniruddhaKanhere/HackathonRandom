@@ -21,7 +21,7 @@ static uint64_t FreeRTOSEntropyPool;
  * by setting the xIsSeeded parameter to pdTRUE, else it will
  * be automatically seeded. */
 void vRNGInit( BaseType_t xIsSeeded,
-               EntropyType_t xSeed )
+               uint64_t xSeed )
 {
     if( xIsSeeded == pdTRUE )
     {
@@ -61,7 +61,7 @@ uint32_t ulGetRandomNumber( void )
     return (int32_t) (xOWFOutput.r & 0xFFFF);
 }
 
-static xOWFRet xOWF( uint64_t input )
+static xOWFRet_t xOWF( uint64_t input )
 {
     union pcSHAOutput
     {
